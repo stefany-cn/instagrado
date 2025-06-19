@@ -1,10 +1,26 @@
-
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- CRIAÇÃO DAS TABELAS DA APLICAÇÃO INSTAGRADO
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- OBS: 
 --     - Foi usado SERIAL para as id's para gerar automaticamente
 --       id's incrementadas
+
+-- ================================================
+-- DROP DAS TABELAS
+-- ================================================
+
+-- DROP TABLE COMENTARIOS CASCADE;
+-- DROP TABLE CURTIDAS CASCADE;
+-- DROP TABLE VISUALIZACOES CASCADE;
+-- DROP TABLE MENSAGENS CASCADE;
+-- DROP TABLE MIDIAS CASCADE;
+-- DROP TABLE REELS CASCADE;
+-- DROP TABLE STORIES CASCADE;
+-- DROP TABLE POSTS CASCADE;
+-- DROP TABLE PUBLICACOES CASCADE;
+-- DROP TABLE PERFIS CASCADE;
+-- DROP TABLE CRIADORES_DE_CONTEUDO CASCADE;
+-- DROP TABLE CONTAS CASCADE;
 
 
 
