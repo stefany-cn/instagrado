@@ -1,8 +1,23 @@
+-- CRIAÇÃO DE VISÕES
+-- Essa visão agrega informações sobre publicações, incluindo o número total de visualizações, comentários e
+-- curtidas, permitindo consultas mais eficientes sobre o desempenho das publicações.  
+CREATE OR REPLACE VIEW INFO_PUBLICACOES AS
+SELECT p.id_publicacao, p.data_publicacao, p.descricao,
+       COUNT(DISTINCT v.id_conta) AS total_visualizacoes,
+       COUNT(DISTINCT c.id_comentario) AS total_comentarios,
+       COUNT(DISTINCT curt.id_curtida) AS total_curtidas
+FROM PUBLICACOES p
+LEFT JOIN VISUALIZACOES v ON p.id_publicacao = v.id_publicacao
+LEFT JOIN COMENTARIOS c ON p.id_publicacao = c.id_publicacao
+LEFT JOIN CURTIDAS curt ON p.id_publicacao = curt.id_publicacao
+GROUP BY p.id_publicacao, p.data_publicacao, p.descricao;
+
+
 -- CRIAÇÃO DAS TABELAS DA APLICAÇÃO INSTAGRADO
 -- OBS: 
 --     - Foi usado SERIAL para as id's para gerar automaticamente
 --       id's incrementadas
---     - Para tempos de duração foram usados INTERVAL 
+
 
 
 -- Tabela: CONTAS
@@ -18,7 +33,7 @@ CREATE TABLE CRIADORES_DE_CONTEUDO (
     id_criador SERIAL PRIMARY KEY,
     id_conta INT UNIQUE NOT NULL,
     interacao INT,  
-    visualizacoes INT,                               
+    visualizacoes_do_perfil INT,                               
     FOREIGN KEY (id_conta) REFERENCES CONTA(id_conta)
 );
 
