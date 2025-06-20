@@ -19,10 +19,7 @@ INSERT INTO CONTAS(nome_usuario, email) VALUES
 INSERT INTO CRIADORES_DE_CONTEUDO (id_conta, interacao, visualizacoes_do_perfil) VALUES
 (1, 500, 1200),
 (2, 1500, 3500),
-(4, 2500, 7000),
-(5, 800, 2000),
-(6, 1100, 2800),
-(7, 1300, 3000);
+(4, 2500, 7000);
 
 -- PERFIS
 INSERT INTO PERFIS (id_conta, descricao) VALUES
@@ -111,20 +108,26 @@ INSERT INTO MENSAGENS (id_remetente, id_destinatario, conteudo) VALUES
 (6, 1, 'Me ensina a tirar fotos assim!');
 
 -- VISUALIZACOES
-INSERT INTO VISUALIZACOES (id_publicacao, id_conta) VALUES
-(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-(2, 1), (2, 4), (2, 5), (2, 7), (2, 8),
-(8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7), (8, 8), (8, 9), (8, 10),
-(12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7), (12, 8), (12, 9), (12, 10),
-(13, 1), (13, 2), (13, 3), (13, 4), (13, 5), (13, 6), (13, 7), (13, 8), (13, 9), (13, 10);
+INSERT INTO VISUALIZACOES (id_criador, id_perfil) VALUES
+(1, 4),
+(1, 5),
+(2, 4),
+(2, 5),
+(3, 4),
+(3, 5),
+(3, 6),
+(3, 7),
+(3, 8),
+(3, 9),
+(3, 10);
 
 -- CURTIDAS
 INSERT INTO CURTIDAS (id_publicacao, id_conta) VALUES
-(1, 2), (1, 3), (1, 4), (1, 5),
+(1, 2),(1, 3), (1, 4), (1, 5),
 (2, 1), (2, 3), (2, 4),
 (5, 6), (5, 7),
 (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6),
-(12, 7), (12, 8), (12, 9), (12, 10),
+(12, 7), (12, 8), (12, 9), (12, 10), (12, 1),
 (13, 1), (13, 2), (13, 3), (13, 4),
 (14, 5), (14, 6), (14, 7), (14, 8),
 (15, 9), (15, 10);
@@ -137,7 +140,11 @@ INSERT INTO COMENTARIOS (id_publicacao, id_conta, conteudo) VALUES
 (4, 6, 'Que linda make!'),
 (5, 7, 'GG!'),
 (8, 3, 'Adorei a música!'),
+(8, 3, 'Adoro essa!'),
+(8, 3, 'Otimo gosto!'),
 (12, 5, 'Já comecei o desafio!'),
+(12, 1, 'Arrasou!'),
+(12, 1, 'Me inspira!'),
 (13, 4, 'Quero visitar todos esses lugares!'),
 (14, 8, 'Vou fazer amanhã!'),
 (15, 2, 'Tutorial top!');

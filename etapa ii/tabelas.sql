@@ -9,20 +9,31 @@
 -- DROP DAS TABELAS
 -- ================================================
 
--- DROP TABLE COMENTARIOS CASCADE;
--- DROP TABLE CURTIDAS CASCADE;
--- DROP TABLE VISUALIZACOES CASCADE;
--- DROP TABLE MENSAGENS CASCADE;
--- DROP TABLE MIDIAS CASCADE;
--- DROP TABLE REELS CASCADE;
--- DROP TABLE STORIES CASCADE;
--- DROP TABLE POSTS CASCADE;
--- DROP TABLE PUBLICACOES CASCADE;
--- DROP TABLE PERFIS CASCADE;
--- DROP TABLE CRIADORES_DE_CONTEUDO CASCADE;
--- DROP TABLE CONTAS CASCADE;
+ DROP TABLE COMENTARIOS CASCADE;
+ DROP TABLE CURTIDAS CASCADE;
+ DROP TABLE VISUALIZACOES CASCADE;
+ DROP TABLE MENSAGENS CASCADE;
+ DROP TABLE MIDIAS CASCADE;
+ DROP TABLE REELS CASCADE;
+ DROP TABLE STORIES CASCADE;
+ DROP TABLE POSTS CASCADE;
+ DROP TABLE PUBLICACOES CASCADE;
+ DROP TABLE PERFIS CASCADE;
+ DROP TABLE CRIADORES_DE_CONTEUDO CASCADE;
+ DROP TABLE CONTAS CASCADE;
 
-
+-- CONTAS(id_conta, nome_usuario, email, data_criacao)
+-- CRIADORES_DE_CONTEUDO(id_criador, id_conta, interacao, visualizacoes_do_perfil)
+-- PERFIS(id_perfil, id_conta, descricao)
+-- PUBLICACOES(id_publicacao, id_conta, data_publicacao, descricao)
+-- POSTS(id_post, id_publicacao, privado)
+-- STORIES ( id_story, id_publicacao, tempo_expiracao)
+-- REELS(id_reels, id_publicacao, duracao)
+-- MIDIAS (id_midia, id_publicacao, tipo, extensao, nome_conteudo, conteudo)
+-- MENSAGENS (id_mensagem, id_remetente, id_destinatario, conteudo, data_msg)
+-- VISUALIZACOES (id_visualizacao, id_criador, id_perfil)
+-- CURTIDAS (id_curtida, id_publicacao, id_conta)
+-- COMENTARIOS (id_comentario, id_publicacao, id_conta, conteudo, data_comentario)
 
 -- Tabela: CONTAS
 CREATE TABLE CONTAS (
@@ -108,10 +119,10 @@ CREATE TABLE MENSAGENS (
 -- Tabela: VISUALIZACOES
 CREATE TABLE VISUALIZACOES (
     id_visualizacao SERIAL PRIMARY KEY,
-    id_publicacao INT NOT NULL,
-    id_conta INT NOT NULL,
-    FOREIGN KEY (id_publicacao) REFERENCES PUBLICACOES(id_publicacao),
-    FOREIGN KEY (id_conta) REFERENCES CONTAS(id_conta)
+    id_criador INT NOT NULL,
+    id_perfil INT NOT NULL,
+    FOREIGN KEY (id_criador) REFERENCES CRIADORES_DE_CONTEUDO(id_criador),
+    FOREIGN KEY (id_perfil) REFERENCES PERFIS(id_perfil)
 );
 
 -- Tabela: CURTIDAS
