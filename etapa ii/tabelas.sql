@@ -47,6 +47,8 @@ CREATE TABLE CONTAS (
 CREATE TABLE CRIADORES_DE_CONTEUDO (
     id_criador SERIAL PRIMARY KEY,
     id_conta INT UNIQUE NOT NULL,
+	-- Por enquanto esses atributos estão sendo 'hard coded'. Serão atualizadas 
+	-- quando fizermos os gatilhos na etapa 3
     interacao INT,  
     visualizacoes_do_perfil INT,                               
     FOREIGN KEY (id_conta) REFERENCES CONTAS(id_conta)

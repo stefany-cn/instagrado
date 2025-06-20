@@ -1,7 +1,6 @@
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --                                               CRIAÇÃO DE VISÕES
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 -- Essa visão agrega informações sobre publicações, incluindo a conta que publicou, o número total de comentários e
 -- curtidas, permitindo consultas mais eficientes sobre o desempenho das publicações.  
 CREATE OR REPLACE VIEW INFO_PUBLICACOES AS
@@ -32,12 +31,15 @@ FROM PERFIS natural join CONTAS
 
 -- Essa visão serve para agregar e explicitar a especialização entre contas de criadores e contas
 CREATE OR REPLACE VIEW CONTAS_CRIADORES AS
-SELECT id_criador, id_conta, nome_usuario
-FROM CRIADORES_DE_CONTEUDO natural join CONTAS
+SELECT id_criador, CRIADORES_DE_CONTEUDO.id_conta, nome_usuario
+FROM CRIADORES_DE_CONTEUDO NATURAL join CONTAS 
 
--- drop view CONTAS_CRIADORES
+select * from CONTAS_CRIADORES
+drop view CONTAS_CRIADORES
 -- drop view CONTAS_PERFIS
 
+SELECT * FROM CRIADORES_DE_CONTEUDO
+SELECT * FROM contas
 
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --                                                    CONSULTAS
@@ -45,19 +47,35 @@ FROM CRIADORES_DE_CONTEUDO natural join CONTAS
 
 -- CONSULTA 1 ==========================================================================================================
 -- Consulta usando GROUP BY
--- Para cada usuário, a quantidade de comentários foram feitos em todas as publicações dele.
+-- Para cada criador de conteúdo, o nome de usuario, id da publicação e a quantidade de comentários e curtidas que foram 
+-- feitos nas publicações, ordenado de forma decrescente por total de curtidas e total de comentários na publicação.
+--		Essa consulta ajuda a identificar publicações com maior engajamento e seus autores.
 
--- ENTIDADES: COMENTARIOS, PUBLICACOES
--- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
--- VISOES: INFO_CRIADORES_DE_CONTEUDO
--- TABELAS ENVOLVIDAS: 3
-
+-- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
+-- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA), CURTIR(PUBLICACAO-CONTA)
+-- VISOES: CONTAS_CRIADORES
+-- TABELAS ENVOLVIDAS: 4 
 SELECT 
-    c.nome_usuario,
-    COUNT(co.id_comentario) AS total_comentarios_suas_publicacoes
-FROM CONTAS c JOIN PUBLICACOES p ON c.id_conta = p.id_conta
-LEFT JOIN COMENTARIOS co ON p.id_publicacao = co.id_publicacao
-GROUP BY c.nome_usuario; 
+    cdc.nome_usuario AS usuario,
+    p.id_publicacao,
+    COUNT(DISTINCT curt.id_curtida) AS total_curtidas,
+    COUNT(DISTINCT co.id_comentario) AS total_comentarios
+FROM 
+    PUBLICACOES p
+JOIN CONTAS_CRIADORES cdc ON p.id_conta = cdc.id_conta
+LEFT JOIN CURTIDAS curt ON curt.id_publicacao = p.id_publicacao
+LEFT JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
+GROUP BY 
+    cdc.nome_usuario, p.id_publicacao
+ORDER BY 
+    total_curtidas DESC, total_comentarios DESC;
+	
+-- SELECT 
+--     c.nome_usuario,
+--     COUNT(co.id_comentario) AS total_comentarios_suas_publicacoes
+-- FROM CONTAS c JOIN PUBLICACOES p ON c.id_conta = p.id_conta
+-- LEFT JOIN COMENTARIOS co ON p.id_publicacao = co.id_publicacao
+-- GROUP BY c.nome_usuario; 
 
 -- CONSULTA 2 ========================================================================================================
 -- Consulta usando subconsulta que não possa ser substituída por JOIN
@@ -65,10 +83,11 @@ GROUP BY c.nome_usuario;
 -- 		Essa subconsulta não pode ser substituída apenas por JOIN, pois contém EXISTS duplamente aninhado para garantir a 
 --		existência das duas condições sem precisar de agregação e poderia haver duplicações e para que não houvesse
 --		seria necessário usar DISTINCT e/ou outros filtros.
+--		Essa consulta é relevante para identificar os interesses de um dado usuário (nesse caso, a usuária "maria_dev")
 
--- ENTIDADES: COMENTARIOS, PUBLICACOES
+-- ENTIDADES: CONTA, PUBLICAÇÃO
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
--- VISOES: INFO_CRIADORES_DE_CONTEUDO
+-- VISOES: []
 -- TABELAS ENVOLVIDAS: 3
 
 SELECT c.nome_usuario
@@ -80,45 +99,54 @@ WHERE EXISTS (SELECT *
 														WHERE co.id_publicacao = p.id_publicacao AND c2.nome_usuario = 'maria_dev'));
 
 -- CONSULTA 3 =====================================================================================================
--- Consulta usando visão INFO_CRIADORES_DE_CONTEUDO
+-- Consulta usando visão CONTAS_CRIADORES
 -- Nome dos usuários, total de publicações que fez e total de comentários que recebeu em suas publicações
 
--- ENTIDADES: COMENTARIOS, PUBLICACOES
+-- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
--- VISOES: INFO_CRIADORES_DE_CONTEUDO
+-- VISOES: CONTAS_CRIADORES
 -- TABELAS ENVOLVIDAS: 3
 
-SELECT ic.nome_usuario, COUNT(DISTINCT p.id_publicacao) AS total_publicacoes, COUNT(co.id_comentario) AS total_comentarios
-FROM INFO_CRIADORES_DE_CONTEUDO ic JOIN PUBLICACOES p ON p.id_conta = ic.id_conta 
-								   JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
-GROUP BY ic.nome_usuario;
+SELECT cc.nome_usuario, 
+	   COUNT(DISTINCT p.id_publicacao) AS total_publicacoes, 
+	   COUNT(co.id_comentario) AS total_comentarios
+FROM CONTAS_CRIADORES cc JOIN PUBLICACOES p ON p.id_conta = cc.id_conta 
+					     JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
+GROUP BY cc.nome_usuario;
 
 
 -- CONSULTA 4 ====================================================================================================
--- Nome dos usuários mais comentados, isto é que possuem comentários em TODAS as suas publicações, excluindo aqueles que não possuem publicações
+-- Consulta usando TODOS que/NENHUM que
+-- Nome de usuário dos criadores de conteúdo e nome de usuário das contas que curtiram todas as publicações do criador
 
--- ENTIDADES: CONTAS, PUBLICACOES
--- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
--- VISOES: []
--- TABELAS ENVOLVIDAS: 2
+-- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
+-- RELACIONAMENTOS: CURTIR(PUBLICACAO-CONTA)
+-- VISOES: CONTAS_CRIADORES
+-- TABELAS ENVOLVIDAS: 3
 
-SELECT c.nome_usuario
-FROM CONTAS c
-WHERE EXISTS 
-(SELECT * 
- FROM PUBLICACOES p 
- WHERE p.id_conta = c.id_conta) AND NOT EXISTS 
- (SELECT *
-  FROM PUBLICACOES p
-  WHERE p.id_conta = c.id_conta AND NOT EXISTS 
-  (SELECT * FROM COMENTARIOS co
-   WHERE co.id_publicacao = p.id_publicacao));
+SELECT 
+    cc.nome_usuario AS nome_criador,
+    u.nome_usuario AS usuario_que_curtiu_todas
+FROM 
+    CONTAS_CRIADORES cc
+JOIN CONTAS u ON u.id_conta != cc.id_conta
+WHERE NOT EXISTS (
+    SELECT *
+    FROM PUBLICACOES p
+    WHERE p.id_conta = cc.id_conta
+    AND NOT EXISTS (
+        SELECT *
+        FROM CURTIDAS curt
+        WHERE curt.id_publicacao = p.id_publicacao
+        AND curt.id_conta = u.id_conta
+    )
+);
 
 -- CONSULTA 5 =====================================================================================================
--- O usuário de todas as contas que são criadores de conteudo e os usuários que visualizaram seu perfil
+-- O nome de usuário de todas as contas que são criadores de conteudo e os usuários que visualizaram seu perfil
 
--- ENTIDADES: CRIADORES_DE_CONTEUDO
--- RELACIONAMENTOS: VISUALIZACOES(CRIADORES_DE_CONTEUDO-PERFIS)
+-- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES)
+-- RELACIONAMENTOS: VISUALIZAÇÃO(CRIADORES_DE_CONTEUDO-PERFIS)
 -- VISOES: CONTAS_PERFIS, CONTAS_CRIADORES
 -- TABELAS ENVOLVIDAS: 4
 select CC.nome_usuario Criador, CP.nome_usuario Visualizadores
@@ -147,7 +175,7 @@ from CONTAS_PERFIS CP
 -- o total de curtidas da conta,
 -- o total de comentarios da conta
 
--- ENTIDADES: CONTAS, POSTS, STORIES, REELS
+-- ENTIDADES: CONTAS, POSTS, STORIES, REELS,
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA), CURTIR(PUBLICACAO-CONTA), CRIAR(PUBLICACAO-CONTA)
 -- VISOES: INFO_PUBLICACOES
 -- TABELAS ENVOLVIDAS: 3
@@ -171,6 +199,26 @@ and (select count(*)
 			where IP3.id_conta = IP0.id_conta
 	) as usuario_publicacoes ) >=2
 
+-- CONSULTA 8 =============================================================================
+-- O nome de usuario de todos aqueles que criaram pelo menos uma publicação de cada tipo (STORY, POST, REELS)
+
+-- ENTIDADES: CONTA, PUBLICAÇÃO, POST, REELS, STORY
+-- RELACIONAMENTOS: CRIAR(CONTA-PUBLICAÇÃO)
+-- VISOES: []
+-- TABELAS ENVOLVIDAS: 5
+
+SELECT c.nome_usuario
+FROM CONTA c
+WHERE EXISTS (SELECT *
+        	  FROM PUBLICACOES p JOIN POSTS po ON po.id_publicacao = p.id_publicacao
+			  WHERE p.id_conta = c.id_conta)
+AND EXISTS   (SELECT *
+        	  FROM PUBLICACOES p JOIN STORIES s ON s.id_publicacao = p.id_publicacao
+			  WHERE p.id_conta = c.id_conta)
+AND EXISTS   (SELECT *
+        	  FROM PUBLICACOES p JOIN REELS r ON r.id_publicacao = p.id_publicacao
+			  WHERE p.id_conta = c.id_conta);
+
 --=======================================================================================================================
 -- SUMARIO PARA REQUISITOS
 --=======================================================================================================================
@@ -179,22 +227,22 @@ and (select count(*)
 -- A. devem ser usadas tabelas correspondentes a pelo menos 7 entidades diferentes, e 7 relacionamentos distintos do DER
 
 -- ENTIDADES USADAS NAS CONSULTAS:
--- 1. CRIADORES_DE_CONTEUDO - CONSULTA 5
--- 2. PUBLICACOES - CONSULTA 6
--- 3. MIDIAS - CONSULTA 6
--- 4. CONTAS - CONSULTA 7
--- 5. POSTS - CONSULTA 7
--- 6. STORIES - CONSULTA 7
--- 7. REELS - CONSULTA 7
+-- 1. CRIADOR_DE_CONTEUDO - CONSULTAS 1,3,4,5
+-- 2. PUBLICAÇÃO - CONSULTAS 1,2,3,4,6,7,8
+-- 3. MIDIA - CONSULTAS 6
+-- 4. CONTA - CONSULTAS 1,2,3,4,5,6,7,8
+-- 5. POST - CONSULTAS 7,8
+-- 6. STORY - CONSULTAS 7,8
+-- 7. REELS - CONSULTAS 7,8
 
 -- RELACIONAMENTOS USADOS NAS CONSULTAS:
--- 1. VISUALIZACOES(CRIADORES_DE_CONTEUDO-PERFIS) - CONSULTA 5
--- 2. INTEGRAR(PERFIS-PUBLICACACOES) - CONSULTA 6
--- 3. CONTER(PUBLICACOES-MIDIAS)  - CONSULTA 6
--- 4. POSSUIR(PERFIS-CONTAS) - CONSULTA 6
--- 5. COMENTAR(PUBLICACAO-CONTA) - CONSULTA 7
--- 6. CURTIR(PUBLICACAO-CONTA) - CONSULTA 7
--- 7. CRIAR(PUBLICACAO-CONTA) - CONSULTA 7
+-- 1. VISUALIZAR(CRIADOR_DE_CONTEUDO-PERFIL) - CONSULTAS 5
+-- 2. INTEGRAR(PERFIS-PUBLICACACOES) - CONSULTAS 6
+-- 3. CONTER(PUBLICACOES-MIDIAS)  - CONSULTAS 6
+-- 4. POSSUIR(PERFIS-CONTAS) - CONSULTAS 6
+-- 5. COMENTAR(PUBLICACAO-CONTA) - CONSULTAS 1,2,3,7
+-- 6. CURTIR(PUBLICACAO-CONTA) - CONSULTAS 1,4,7
+-- 7. CRIAR(PUBLICACAO-CONTA) - CONSULTAS 7,8
 
 --=============
 -- B. Todas consultas possuem no minimo 3 tabelas
@@ -216,8 +264,11 @@ and (select count(*)
 
 --=============
 -- F. No mínimos duas consultas devem utilizar a visão definida no item 2.a.
--- 1. CONSULTA 5 - CONTAS_PERFIS
--- 2. CONSULTA 6 - CONTAS_PERFIS
+-- 1. CONSULTA 1 - CONTAS_CRIADORES
+-- 2. CONSULTA 3 - CONTAS_CRIADORES
+-- 3. CONSULTA 4 - CONTAS_CRIADORES
+-- 4. CONSULTA 5 - CONTAS_PERFIS E CONTAS_CRIADORES
+-- 5. CONSULTA 6 - CONTAS_PERFIS
 
 --=============
 -- G. Sua base de dados deve estar populada de forma a retornar resultados para todas consultas. Recomenda-se que

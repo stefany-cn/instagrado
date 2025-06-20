@@ -50,7 +50,9 @@ INSERT INTO PUBLICACOES (id_conta, descricao) VALUES
 (6, 'Desafio de 30 dias de abdominal!'), --12
 (9, 'Top 5 destinos para 2025.'), --13
 (7, 'Smoothie saudável para o café.'), --14
-(2, 'Como fazer deploy no Heroku.' ); --15
+(2, 'Como fazer deploy no Heroku.' ), --15
+(1, 'Meu novo story!'),
+(1, 'Meu novo reel!');
 
 -- POSTS
 INSERT INTO POSTS (id_publicacao, privado) VALUES
@@ -67,14 +69,16 @@ INSERT INTO STORIES (id_publicacao, tempo_expiracao) VALUES
 (8, '24:00:00'),
 (9, '24:00:00'),
 (10, '24:00:00'),
-(11, '24:00:00');
+(11, '24:00:00'),
+(16, '24:00:00');
 
 -- REELS
 INSERT INTO REELS (id_publicacao, duracao) VALUES
 (12, 60),
 (13, 45),
 (14, 30),
-(15, 90);
+(15, 90),
+(17, 45);
 
 -- MIDIAS (dummy binário usando decode como exemplo)
 INSERT INTO MIDIAS (id_publicacao, tipo, extensao, nome_conteudo, conteudo) VALUES
@@ -92,7 +96,9 @@ INSERT INTO MIDIAS (id_publicacao, tipo, extensao, nome_conteudo, conteudo) VALU
 (12, 'VIDEO', 'mp4', 'desafio_abdominal', decode('00000020', 'hex')),
 (13, 'FOTO', 'jpg', 'destinos_2025', decode('FFD8FFE0', 'hex')),
 (14, 'FOTO', 'png', 'smoothie', decode('89504E47', 'hex')),
-(15, 'FOTO', 'jpg', 'deploy_heroku', decode('FFD8FFE0', 'hex'));
+(15, 'FOTO', 'jpg', 'deploy_heroku', decode('FFD8FFE0', 'hex')),
+(16, 'FOTO', 'jpg', 'novo_story_joao', decode('FFD8FFE0', 'hex')),
+(17, 'VIDEO', 'mp4', 'novo_reel_joao', decode('00000020', 'hex'));
 
 -- MENSAGENS
 INSERT INTO MENSAGENS (id_remetente, id_destinatario, conteudo) VALUES
