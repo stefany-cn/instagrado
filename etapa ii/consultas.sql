@@ -8,20 +8,19 @@ CREATE OR REPLACE VIEW INFO_PUBLICACOES AS
 SELECT p.id_conta, p.id_publicacao, p.data_publicacao, p.descricao,
        COUNT(DISTINCT c.id_comentario) AS total_comentarios,
        COUNT(DISTINCT curt.id_curtida) AS total_curtidas
-FROM PUBLICACOES p
-LEFT JOIN COMENTARIOS c ON p.id_publicacao = c.id_publicacao
-LEFT JOIN CURTIDAS curt ON p.id_publicacao = curt.id_publicacao
+FROM PUBLICACOES p LEFT JOIN COMENTARIOS c ON p.id_publicacao = c.id_publicacao
+				   LEFT JOIN CURTIDAS curt ON p.id_publicacao = curt.id_publicacao
 GROUP BY p.id_publicacao, p.data_publicacao, p.descricao;
 
 -- Essa visão serve para agregar e explicitar o relacionamento entre contas e perfis
 CREATE OR REPLACE VIEW CONTAS_PERFIS AS
 SELECT id_conta, id_perfil, nome_usuario, descricao
-FROM PERFIS natural join CONTAS
+FROM PERFIS NATURAL JOIN CONTAS;
 
 -- Essa visão serve para agregar e explicitar a especialização entre contas de criadores e contas
 CREATE OR REPLACE VIEW CONTAS_CRIADORES AS
 SELECT id_criador, CRIADORES_DE_CONTEUDO.id_conta, nome_usuario
-FROM CRIADORES_DE_CONTEUDO NATURAL join CONTAS 
+FROM CRIADORES_DE_CONTEUDO NATURAL JOIN CONTAS;
 
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --                                                    CONSULTAS
@@ -37,20 +36,15 @@ FROM CRIADORES_DE_CONTEUDO NATURAL join CONTAS
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA), CURTIR(PUBLICACAO-CONTA)
 -- VISOES: CONTAS_CRIADORES
 -- TABELAS ENVOLVIDAS: 4 
-SELECT 
-    cdc.nome_usuario AS usuario,
-    p.id_publicacao,
-    COUNT(DISTINCT curt.id_curtida) AS total_curtidas,
-    COUNT(DISTINCT co.id_comentario) AS total_comentarios
-FROM 
-    PUBLICACOES p
-JOIN CONTAS_CRIADORES cdc ON p.id_conta = cdc.id_conta
-LEFT JOIN CURTIDAS curt ON curt.id_publicacao = p.id_publicacao
-LEFT JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
-GROUP BY 
-    cdc.nome_usuario, p.id_publicacao
-ORDER BY 
-    total_curtidas DESC, total_comentarios DESC;
+SELECT cdc.nome_usuario AS usuario,
+       p.id_publicacao,
+       COUNT(DISTINCT curt.id_curtida) AS total_curtidas,
+       COUNT(DISTINCT co.id_comentario) AS total_comentarios
+FROM PUBLICACOES p JOIN CONTAS_CRIADORES cdc ON p.id_conta = cdc.id_conta
+                   LEFT JOIN CURTIDAS curt ON curt.id_publicacao = p.id_publicacao
+                   LEFT JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
+GROUP BY cdc.nome_usuario, p.id_publicacao
+ORDER BY total_curtidas DESC, total_comentarios DESC;
 
 -- CONSULTA 2 ========================================================================================================
 -- Consulta usando subconsulta que não possa ser substituída por JOIN
@@ -69,9 +63,10 @@ SELECT c.nome_usuario
 FROM CONTAS c
 WHERE EXISTS (SELECT * 
 			  FROM PUBLICACOES p 
-			  WHERE p.id_conta = c.id_conta AND EXISTS (SELECT * 
-			  											FROM COMENTARIOS co JOIN CONTAS c2 ON co.id_conta = c2.id_conta 
-														WHERE co.id_publicacao = p.id_publicacao AND c2.nome_usuario = 'maria_dev'));
+			  WHERE p.id_conta = c.id_conta 
+  AND EXISTS (SELECT * 
+			  FROM COMENTARIOS co JOIN CONTAS c2 ON co.id_conta = c2.id_conta 
+			  WHERE co.id_publicacao = p.id_publicacao AND c2.nome_usuario = 'maria_dev'));
 
 -- CONSULTA 3 =====================================================================================================
 -- Consulta usando visão CONTAS_CRIADORES
@@ -101,23 +96,15 @@ GROUP BY cc.nome_usuario;
 -- VISOES: CONTAS_CRIADORES
 -- TABELAS ENVOLVIDAS: 3
 
-SELECT 
-    cc.nome_usuario AS nome_criador,
-    u.nome_usuario AS usuario_que_curtiu_todas
-FROM 
-    CONTAS_CRIADORES cc
-JOIN CONTAS u ON u.id_conta != cc.id_conta
-WHERE NOT EXISTS (
-    SELECT *
-    FROM PUBLICACOES p
-    WHERE p.id_conta = cc.id_conta
-    AND NOT EXISTS (
-        SELECT *
-        FROM CURTIDAS curt
-        WHERE curt.id_publicacao = p.id_publicacao
-        AND curt.id_conta = u.id_conta
-    )
-);
+SELECT cc.nome_usuario AS nome_criador,
+       u.nome_usuario AS usuario_que_curtiu_todas
+FROM CONTAS_CRIADORES cc JOIN CONTAS u ON u.id_conta != cc.id_conta
+WHERE NOT EXISTS (SELECT *
+				  FROM PUBLICACOES p
+				  WHERE p.id_conta = cc.id_conta
+  AND NOT EXISTS (SELECT *
+  				  FROM CURTIDAS curt
+				  WHERE curt.id_publicacao = p.id_publicacao AND curt.id_conta = u.id_conta));
 
 -- CONSULTA 5 =====================================================================================================
 -- O nome de usuário de todas as contas que são criadores de conteudo e os usuários que visualizaram seu perfil
@@ -130,7 +117,7 @@ SELECT CC.nome_usuario Criador, CP.nome_usuario Visualizadores
 FROM CRIADORES_DE_CONTEUDO CDC 
      JOIN CONTAS_CRIADORES CC ON (CDC.id_criador = CC.id_criador)
 	 JOIN VISUALIZACOES V ON (CDC.id_criador = V.id_criador)
-	 JOIN CONTAS_PERFIS CP ON (V.id_perfil = CP.id_perfil)
+	 JOIN CONTAS_PERFIS CP ON (V.id_perfil = CP.id_perfil);
 
 -- CONSULTA 6 =============================================================================
 -- Para todos os Perfis do aplicativo, seus usuários e suas publicações
@@ -141,10 +128,8 @@ FROM CRIADORES_DE_CONTEUDO CDC
 -- TABELAS ENVOLVIDAS: 3
 
 SELECT nome_usuario, data_publicacao, P.descricao, conteudo
-FROM CONTAS_PERFIS CP
-	 JOIN PUBLICACOES P ON ( CP.id_conta = P.id_conta)
-	 NATURAL JOIN MIDIAS
-ORDER BY nome_usuario
+FROM CONTAS_PERFIS CP JOIN PUBLICACOES P ON ( CP.id_conta = P.id_conta) NATURAL JOIN MIDIAS
+ORDER BY nome_usuario;
 
 -- CONSULTA 7 =============================================================================
 -- Para todas as contas do instagrado, as contas mais populares e engajadas. Isto é, contas com: 
@@ -160,32 +145,27 @@ ORDER BY nome_usuario
 -- VISOES: INFO_PUBLICACOES
 -- TABELAS ENVOLVIDAS: 3
 
-SELECT
-    c.nome_usuario,
-    COUNT(DISTINCT ip.id_publicacao) AS publicacoes,
-    SUM(ip.total_curtidas) AS conta_curtidas,
-    SUM(ip.total_comentarios) AS conta_comentarios,
-    COUNT(DISTINCT CASE
-        WHEN p.id_post IS NOT NULL THEN 'POST'
-        WHEN s.id_story IS NOT NULL THEN 'STORY'
-        WHEN r.id_reels IS NOT NULL THEN 'REELS'
-    END) AS tipos_publicacao
-FROM
-    CONTAS c
-    JOIN INFO_PUBLICACOES ip ON c.id_conta = ip.id_conta
-    LEFT JOIN POSTS p ON ip.id_publicacao = p.id_publicacao
-    LEFT JOIN STORIES s ON ip.id_publicacao = s.id_publicacao
-    LEFT JOIN REELS r ON ip.id_publicacao = r.id_publicacao
-GROUP BY
-    c.nome_usuario, c.id_conta
-HAVING
-    SUM(ip.total_curtidas) >= 5
-    AND SUM(ip.total_comentarios) >= 2
-    AND COUNT(DISTINCT CASE
-        WHEN p.id_post IS NOT NULL THEN 'POST'
-        WHEN s.id_story IS NOT NULL THEN 'STORY'
-        WHEN r.id_reels IS NOT NULL THEN 'REELS'
-    END) >= 2;
+SELECT c.nome_usuario,
+       COUNT(DISTINCT ip.id_publicacao) AS publicacoes,
+       SUM(ip.total_curtidas) AS conta_curtidas,
+       SUM(ip.total_comentarios) AS conta_comentarios,
+       COUNT(DISTINCT CASE
+             WHEN p.id_post IS NOT NULL THEN 'POST'
+             WHEN s.id_story IS NOT NULL THEN 'STORY'
+             WHEN r.id_reels IS NOT NULL THEN 'REELS'
+             END) AS tipos_publicacao
+FROM CONTAS c JOIN INFO_PUBLICACOES ip ON c.id_conta = ip.id_conta
+              LEFT JOIN POSTS p ON ip.id_publicacao = p.id_publicacao
+              LEFT JOIN STORIES s ON ip.id_publicacao = s.id_publicacao
+              LEFT JOIN REELS r ON ip.id_publicacao = r.id_publicacao
+GROUP BY c.nome_usuario, c.id_conta
+HAVING SUM(ip.total_curtidas) >= 5
+   AND SUM(ip.total_comentarios) >= 2
+   AND COUNT(DISTINCT CASE
+             WHEN p.id_post IS NOT NULL THEN 'POST'
+             WHEN s.id_story IS NOT NULL THEN 'STORY'
+             WHEN r.id_reels IS NOT NULL THEN 'REELS'
+             END) >= 2;
 	
 -- CONSULTA 8 =============================================================================
 -- O nome de usuario de todos aqueles que criaram pelo menos uma publicação de cada tipo (STORY, POST, REELS)
@@ -200,10 +180,10 @@ FROM CONTAS c
 WHERE EXISTS (SELECT *
         	  FROM PUBLICACOES p JOIN POSTS po ON po.id_publicacao = p.id_publicacao
 			  WHERE p.id_conta = c.id_conta)
-AND EXISTS   (SELECT *
+  AND EXISTS (SELECT *
         	  FROM PUBLICACOES p JOIN STORIES s ON s.id_publicacao = p.id_publicacao
 			  WHERE p.id_conta = c.id_conta)
-AND EXISTS   (SELECT *
+  AND EXISTS (SELECT *
         	  FROM PUBLICACOES p JOIN REELS r ON r.id_publicacao = p.id_publicacao
 			  WHERE p.id_conta = c.id_conta);
 
@@ -217,9 +197,8 @@ AND EXISTS   (SELECT *
 -- TABELAS ENVOLVIDAS: 3
 
 SELECT c.nome_usuario, p.id_publicacao
-FROM CONTAS c
-JOIN PUBLICACOES p ON p.id_conta = c.id_conta
-JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
+FROM CONTAS c JOIN PUBLICACOES p ON p.id_conta = c.id_conta
+              JOIN COMENTARIOS co ON co.id_publicacao = p.id_publicacao
 GROUP BY c.nome_usuario, p.id_publicacao
 HAVING COUNT(DISTINCT co.id_conta) >= 3;
 
@@ -233,9 +212,8 @@ HAVING COUNT(DISTINCT co.id_conta) >= 3;
 -- TABELAS ENVOLVIDAS: 3
 
 SELECT c.nome_usuario, COUNT(p.id_publicacao) AS publicacoes_sem_curtidas
-FROM CONTAS c
-JOIN PUBLICACOES p ON p.id_conta = c.id_conta
-LEFT JOIN CURTIDAS curt ON curt.id_publicacao = p.id_publicacao
+FROM CONTAS c JOIN PUBLICACOES p ON p.id_conta = c.id_conta
+              LEFT JOIN CURTIDAS curt ON curt.id_publicacao = p.id_publicacao
 WHERE curt.id_curtida IS NULL
 GROUP BY c.nome_usuario;
 

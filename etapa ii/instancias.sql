@@ -156,5 +156,5 @@ INSERT INTO COMENTARIOS (id_publicacao, id_conta, conteudo) VALUES
 (12, 1, 'Me inspira!'),
 (13, 4, 'Quero visitar todos esses lugares!'),
 (14, 8, 'Vou fazer amanhã!'),
-(15, 2, 'Tutorial top!');
+(15, 1, 'Tutorial top!');
 
