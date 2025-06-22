@@ -51,8 +51,8 @@ INSERT INTO PUBLICACOES (id_conta, descricao) VALUES
 (9, 'Top 5 destinos para 2025.'), --13
 (7, 'Smoothie saudável para o café.'), --14
 (2, 'Como fazer deploy no Heroku.' ), --15
-(1, 'Meu novo story!'),
-(1, 'Meu novo reel!');
+(1, 'Meu novo story!'), --16
+(1, 'Meu novo reel!'); --17
 
 -- POSTS
 INSERT INTO POSTS (id_publicacao, privado) VALUES
@@ -136,12 +136,15 @@ INSERT INTO CURTIDAS (id_publicacao, id_conta) VALUES
 (12, 7), (12, 8), (12, 9), (12, 10), (12, 1),
 (13, 1), (13, 2), (13, 3), (13, 4),
 (14, 5), (14, 6), (14, 7), (14, 8),
-(15, 9), (15, 10);
+(15, 9), (15, 10),
+(16, 2),
+(17, 2);
 
 -- COMENTARIOS
 INSERT INTO COMENTARIOS (id_publicacao, id_conta, conteudo) VALUES
 (1, 2, 'Incrível!'),
 (1, 3, 'Maravilhoso lugar!'),
+(1, 4, 'Magnificoo!'),
 (2, 1, 'Ótima iniciativa!'),
 (4, 6, 'Que linda make!'),
 (5, 7, 'GG!'),

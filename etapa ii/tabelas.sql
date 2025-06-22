@@ -22,18 +22,9 @@
  DROP TABLE CRIADORES_DE_CONTEUDO CASCADE;
  DROP TABLE CONTAS CASCADE;
 
--- CONTAS(id_conta, nome_usuario, email, data_criacao)
--- CRIADORES_DE_CONTEUDO(id_criador, id_conta, interacao, visualizacoes_do_perfil)
--- PERFIS(id_perfil, id_conta, descricao)
--- PUBLICACOES(id_publicacao, id_conta, data_publicacao, descricao)
--- POSTS(id_post, id_publicacao, privado)
--- STORIES ( id_story, id_publicacao, tempo_expiracao)
--- REELS(id_reels, id_publicacao, duracao)
--- MIDIAS (id_midia, id_publicacao, tipo, extensao, nome_conteudo, conteudo)
--- MENSAGENS (id_mensagem, id_remetente, id_destinatario, conteudo, data_msg)
--- VISUALIZACOES (id_visualizacao, id_criador, id_perfil)
--- CURTIDAS (id_curtida, id_publicacao, id_conta)
--- COMENTARIOS (id_comentario, id_publicacao, id_conta, conteudo, data_comentario)
+-- ================================================
+-- COMANDOS CREATE TABLE
+-- ================================================
 
 -- Tabela: CONTAS
 CREATE TABLE CONTAS (
@@ -47,8 +38,6 @@ CREATE TABLE CONTAS (
 CREATE TABLE CRIADORES_DE_CONTEUDO (
     id_criador SERIAL PRIMARY KEY,
     id_conta INT UNIQUE NOT NULL,
-	-- Por enquanto esses atributos estão sendo 'hard coded'. Serão atualizadas 
-	-- quando fizermos os gatilhos na etapa 3
     interacao INT,  
     visualizacoes_do_perfil INT,                               
     FOREIGN KEY (id_conta) REFERENCES CONTAS(id_conta)
@@ -83,7 +72,7 @@ CREATE TABLE POSTS (
 CREATE TABLE STORIES (
     id_story SERIAL PRIMARY KEY,
     id_publicacao INT UNIQUE NOT NULL,
-    tempo_expiracao TIME,                               -- COMO GARANTIR AS 24 HORAS??
+    tempo_expiracao TIME,                            
     FOREIGN KEY (id_publicacao) REFERENCES PUBLICACOES(id_publicacao)
 );
 
@@ -99,11 +88,11 @@ CREATE TABLE REELS (
 CREATE TABLE MIDIAS (
     id_midia SERIAL PRIMARY KEY,
     id_publicacao INT NOT NULL,
-    tipo VARCHAR(20) CHECK (tipo IN ('FOTO', 'VIDEO')), -- DÚVIDA SOBRE SE VAMOS FAZER ASSIM
+    tipo VARCHAR(20) CHECK (tipo IN ('FOTO', 'VIDEO')),
     extensao VARCHAR(20),
     nome_conteudo VARCHAR(200),
     conteudo BYTEA NOT NULL,
-    UNIQUE (nome_conteudo,extensao),                    -- NAO LEMBRO COMO FAZ ISSO
+    UNIQUE (nome_conteudo,extensao),                 
     FOREIGN KEY (id_publicacao) REFERENCES PUBLICACOES(id_publicacao)
 );
 
