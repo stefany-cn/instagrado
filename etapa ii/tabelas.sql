@@ -1,3 +1,14 @@
+--     		  Universidade Federal do Rio Grande do Sul
+--             	           Instituto de Informática
+--       	    Departamento de Informática Aplicada
+--
+--      	   INF01145 Fundamentos de Banco de Dados
+--                   Profa. Dra. Karin Becker - Turma A
+--
+--           		 TRABALHO DA DISCIPLINA
+--
+--    Eduardo Veiga Ferreira (578144) e Stefany Costa Nascimento (263870)
+
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- CRIAÇÃO DAS TABELAS DA APLICAÇÃO INSTAGRADO
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++
