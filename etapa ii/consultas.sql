@@ -38,10 +38,9 @@ FROM CRIADORES_DE_CONTEUDO NATURAL JOIN CONTAS;
 -- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 -- CONSULTA 1 ==========================================================================================================
--- Consulta usando GROUP BY
--- Para cada criador de conteúdo, o nome de usuario, id da publicação e a quantidade de comentários e curtidas que foram 
--- feitos nas publicações, ordenado de forma decrescente por total de curtidas e total de comentários na publicação.
+-- "Para cada criador de conteúdo, o nome de usuario, id da publicação e a quantidade de comentários e curtidas que foram feitos nas publicações, ordenado de forma decrescente por total de curtidas e total de comentários na publicação."
 --		Essa consulta ajuda a identificar publicações com maior engajamento e seus autores.
+-- Consulta usando GROUP BY
 
 -- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA), CURTIR(PUBLICACAO-CONTA)
@@ -58,13 +57,12 @@ GROUP BY cdc.nome_usuario, p.id_publicacao
 ORDER BY total_curtidas DESC, total_comentarios DESC;
 
 -- CONSULTA 2 ========================================================================================================
--- Consulta usando subconsulta que não possa ser substituída por JOIN
--- Nome dos usuários que tenham pelo menos uma publicação que contenha pelo menos um comentário da usuária "maria_dev".
+-- "Nome dos usuários que tenham pelo menos uma publicação que contenha pelo menos um comentário da usuária 'maria_dev'."
 -- 		Essa subconsulta não pode ser substituída apenas por JOIN, pois contém EXISTS duplamente aninhado para garantir a 
 --		existência das duas condições sem precisar de agregação e poderia haver duplicações e para que não houvesse
 --		seria necessário usar DISTINCT e/ou outros filtros.
 --		Essa consulta é relevante para identificar os interesses de um dado usuário (nesse caso, a usuária "maria_dev")
-
+-- Consulta usando subconsulta que não possa ser substituída por JOIN
 -- ENTIDADES: CONTA, PUBLICAÇÃO
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
 -- VISOES: []
@@ -80,10 +78,9 @@ WHERE EXISTS (SELECT *
 			  WHERE co.id_publicacao = p.id_publicacao AND c2.nome_usuario = 'maria_dev'));
 
 -- CONSULTA 3 =====================================================================================================
+-- "Nome do usuario dos criadores de conteudo, total de publicações que fez e total de comentários que recebeu em suas publicações."
 -- Consulta usando visão CONTAS_CRIADORES
 -- Consulta usando GROUP BY
--- Nome do usuario dos criadores de conteudo, total de publicações que fez e total de comentários que recebeu em suas publicações
-
 -- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
 -- RELACIONAMENTOS: COMENTAR(PUBLICACAO-CONTA)
 -- VISOES: CONTAS_CRIADORES
@@ -98,10 +95,9 @@ GROUP BY cc.nome_usuario;
 
 
 -- CONSULTA 4 ====================================================================================================
+-- "Nome de usuário dos criadores de conteúdo e nome de usuário das contas que curtiram todas as publicações do criador."
 -- Consulta usando TODOS que/NENHUM que
 -- Consulta usando subconsulta
--- Nome de usuário dos criadores de conteúdo e nome de usuário das contas que curtiram todas as publicações do criador
-
 -- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES), PUBLICAÇÃO
 -- RELACIONAMENTOS: CURTIR(PUBLICACAO-CONTA)
 -- VISOES: CONTAS_CRIADORES
@@ -118,7 +114,7 @@ WHERE NOT EXISTS (SELECT *
 				  WHERE curt.id_publicacao = p.id_publicacao AND curt.id_conta = u.id_conta));
 
 -- CONSULTA 5 =====================================================================================================
--- O nome de usuário de todas as contas que são criadores de conteudo e os usuários que visualizaram seu perfil
+-- "O nome de usuário de todas as contas que são criadores de conteudo e os usuários que visualizaram seu perfil."
 
 -- ENTIDADES: CONTA (VISÃO CONTAS_CRIADORES), CRIADOR_DE_CONTEÚDO (VISÃO CONTAS_CRIADORES)
 -- RELACIONAMENTOS: VISUALIZAÇÃO(CRIADORES_DE_CONTEUDO-PERFIS)
@@ -131,7 +127,7 @@ FROM CRIADORES_DE_CONTEUDO CDC
 	 JOIN CONTAS_PERFIS CP ON (V.id_perfil = CP.id_perfil);
 
 -- CONSULTA 6 =============================================================================
--- Para todos os Perfis do aplicativo, seus usuários e suas publicações
+-- "Para todos os Perfis do aplicativo, seus usuários e suas publicações."
 
 -- ENTIDADES: PUBLICACOES, MIDIAS
 -- RELACIONAMENTOS: INTEGRAR(PERFIS-PUBLICACACOES), POSSUI(PERFIS-CONTAS), CONTER(PUBLICACOES-MIDIAS)
@@ -143,8 +139,8 @@ FROM CONTAS_PERFIS CP JOIN PUBLICACOES P ON ( CP.id_conta = P.id_conta) NATURAL 
 ORDER BY nome_usuario;
 
 -- CONSULTA 7 =============================================================================
--- Para todas as contas do instagrado, as contas mais populares e engajadas. Isto é, contas com: 
--- curtidas>=5, comentarios>=2, e no minimo dois tipos diferentes de publicações
+-- "Para todas as contas do instagrado, as contas mais populares e engajadas. Isto é, contas com: 
+-- curtidas>=5, comentarios>=2, e no minimo dois tipos diferentes de publicações."
 -- Para cada uma dessas contas além de seu usuário:
 -- o total de curtidas da conta,
 -- o total de comentarios da conta
@@ -179,7 +175,7 @@ HAVING SUM(ip.total_curtidas) >= 5
              END) >= 2;
 	
 -- CONSULTA 8 =============================================================================
--- O nome de usuario de todos aqueles que criaram pelo menos uma publicação de cada tipo (STORY, POST, REELS)
+-- "O nome de usuario de todos aqueles que criaram pelo menos uma publicação de cada tipo (STORY, POST, REELS)."
 
 -- ENTIDADES: CONTA, PUBLICAÇÃO, POST, REELS, STORY
 -- RELACIONAMENTOS: CRIAR(CONTA-PUBLICAÇÃO)
@@ -199,7 +195,7 @@ WHERE EXISTS (SELECT *
 			  WHERE p.id_conta = c.id_conta);
 
 -- CONSULTA 9 =====================================================================================================
--- Usuários que receberam comentários de pelo menos 3 usuários diferentes em uma mesma publicação
+-- "Usuários que receberam comentários de pelo menos 3 usuários diferentes em uma mesma publicação."
 -- Isso identifica publicações que geraram discussões mais amplas.
 
 -- ENTIDADES: CONTA, PUBLICAÇÃO
@@ -214,7 +210,7 @@ GROUP BY c.nome_usuario, p.id_publicacao
 HAVING COUNT(DISTINCT co.id_conta) >= 3;
 
 -- CONSULTA 10 ====================================================================================================
--- Para cada usuário, a quantidade de publicações que nunca receberam curtidas
+-- "Para cada usuário, a quantidade de publicações que nunca receberam curtidas."
 -- Isso pode ajudar a identificar conteúdos com baixo engajamento.
 
 -- ENTIDADES: CONTA, PUBLICAÇÃO
