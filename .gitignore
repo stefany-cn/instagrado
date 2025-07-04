@@ -1,2 +1,17 @@
-/.DS_Store
-etapa i/.DS_Store
+# Ignorar arquivos e pastas do sistema
+.DS_Store
+*.pyc
+__pycache__/
+
+# Ignorar ambientes virtuais Python
+venv/
+env/
+ENV/
+.venv/
+
+# Outras pastas temporárias
+*.log
+
+# Ignorar ambientes virtuais em subdiretórios (opcional)
+**/venv/
+**/.venv/
