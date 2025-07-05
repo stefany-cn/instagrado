@@ -24,6 +24,7 @@ import re                   # Importa a biblioteca re para expressões regulares
 from pathlib import Path    # Importa Path para manipulação de caminhos de arquivos
 
 
+''' ======= Função para carregar consultas do arquivo SQL ======= '''
 
 def carregar_consultas(caminho_consultas):
     with open(caminho_consultas, "r") as f:
@@ -43,11 +44,16 @@ def carregar_consultas(caminho_consultas):
             consultas[numero] = sql_match.group(0).strip().rstrip(";") + ";"  # garante que termina com ;
     return consultas
 
+
+''' ======= Exibe o menu de consultas disponíveis ======= '''
+
 def exibir_menu(consultas):
     print("\n=== MENU DE CONSULTAS ===")
     for numero in sorted(consultas.keys()):
         print(f"{numero}. CONSULTA {numero}")
     print("0. Sair")
+
+''' ======= Executa a consulta SQL e exibe os resultados, se houver ======= '''
 
 def executar_consulta(conn, sql):
     cur = conn.cursor()
@@ -60,6 +66,8 @@ def executar_consulta(conn, sql):
     else:
         print("Consulta executada com sucesso (sem retorno).")
     cur.close()
+
+''' ============================ MAIN ============================ '''
 
 def main():
     # Caminho absoluto para consultas.sql
@@ -77,8 +85,8 @@ def main():
         host="localhost",
         port="5432"
     )
-
-    while True:
+    escolha = -1
+    while escolha != "0":
         exibir_menu(consultas)
         escolha = input("\nDigite o número da consulta a executar (ou 0 para sair): ")
         
